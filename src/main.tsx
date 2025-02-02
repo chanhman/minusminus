@@ -1,15 +1,31 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import "./index.css";
-import App from "./App.tsx";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+// Import the generated route tree
+import { routeTree } from "./routeTree.gen";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ConvexProvider client={convex}>
-      <App />
-    </ConvexProvider>
-  </StrictMode>,
-);
+// Create a new router instance
+const router = createRouter({ routeTree });
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+// Render the app
+const rootElement = document.getElementById("root")!;
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <ConvexProvider client={convex}>
+        <RouterProvider router={router} />
+      </ConvexProvider>
+    </StrictMode>,
+  );
+}
