@@ -8,6 +8,7 @@ function App() {
 
   const addPersonToShame = useMutation(api.shamePoints.addPersonToShame);
   const deletePerson = useMutation(api.shamePoints.deletePerson);
+  const updateShamePoints = useMutation(api.shamePoints.updateShamePoints);
   const shamePoints = useQuery(api.shamePoints.get);
 
   const { reward: sorryReward } = useReward("rewardSorryId", "emoji", {
@@ -54,11 +55,27 @@ function App() {
                 💩
               </button>
             </h3>
-            <button onClick={sorryReward}>
+            <button
+              onClick={async () => {
+                await updateShamePoints({
+                  id: _id,
+                  shameCount: shameCount + 1,
+                });
+                sorryReward();
+              }}
+            >
               <span id="rewardSorryId" />
               🫣 My bad
             </button>
-            <button onClick={shameReward}>
+            <button
+              onClick={async () => {
+                await updateShamePoints({
+                  id: _id,
+                  shameCount: shameCount - 1,
+                });
+                shameReward();
+              }}
+            >
               <span id="rewardShameId" />
               🤡 Shame
             </button>

@@ -23,8 +23,9 @@ export const deletePerson = mutation({
   },
 });
 
-// export const updateShamePoints = mutation({
-//   args: { id: v.id("shamePoints") },
-//   handler: async (ctx, args) => {
-//   },
-// });
+export const updateShamePoints = mutation({
+  args: { id: v.id("shamePoints"), shameCount: v.number() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { shameCount: args.shameCount });
+  },
+});
