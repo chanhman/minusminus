@@ -1,87 +1,35 @@
-import { useState } from "react";
-import { useReward } from "react-rewards";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
+import ShameItem from "./components/ShameItem/ShameItem";
+import AddPerson from "./components/AddPerson/AddPerson";
 
 function App() {
-  const [name, setName] = useState("");
-
-  const addPersonToShame = useMutation(api.shamePoints.addPersonToShame);
-  const deletePerson = useMutation(api.shamePoints.deletePerson);
-  const updateShamePoints = useMutation(api.shamePoints.updateShamePoints);
   const shamePoints = useQuery(api.shamePoints.get);
-
-  const { reward: sorryReward } = useReward("rewardSorryId", "emoji", {
-    emoji: ["🫣"],
-  });
-  const { reward: shameReward } = useReward("rewardShameId", "emoji", {
-    emoji: ["🤡"],
-  });
-
+  const leaderBoard = shamePoints
+    ? [...shamePoints].sort((a, b) => a.shameCount - b.shameCount)
+    : [];
   return (
     <>
       <h1>Minus minus</h1>
       <h2>Add person to shame</h2>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          await addPersonToShame({ name });
-          setName("");
-        }}
-      >
-        <label htmlFor="personToShame">Name</label>
-        <input
-          type="text"
-          id="personToShame"
-          name="personToShame"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button type="submit">Add person</button>
-      </form>
+      <AddPerson />
+
       <h2>People to shame</h2>
       <ul>
         {shamePoints?.map(({ _id, name, shameCount }) => (
           <li key={_id}>
-            <h3>
-              {name} ({shameCount})
-              <button
-                onClick={async () => {
-                  if (window.confirm("You sure??")) {
-                    deletePerson({ id: _id });
-                  }
-                }}
-              >
-                💩
-              </button>
-            </h3>
-            <button
-              onClick={async () => {
-                await updateShamePoints({
-                  id: _id,
-                  shameCount: shameCount + 1,
-                });
-                sorryReward();
-              }}
-            >
-              <span id="rewardSorryId" />
-              🫣 My bad
-            </button>
-            <button
-              onClick={async () => {
-                await updateShamePoints({
-                  id: _id,
-                  shameCount: shameCount - 1,
-                });
-                shameReward();
-              }}
-            >
-              <span id="rewardShameId" />
-              🤡 Shame
-            </button>
+            <ShameItem id={_id} name={name} shameCount={shameCount} />
           </li>
         ))}
       </ul>
+
+      <h2>Current loser</h2>
+      <p>The person with the lowest points buys lunch.</p>
+      {leaderBoard.map(({ _id, name, shameCount }) => (
+        <div key={_id}>
+          {name}: {shameCount}
+        </div>
+      ))}
     </>
   );
 }
